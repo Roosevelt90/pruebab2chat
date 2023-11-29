@@ -7,4 +7,5 @@ import com.test.b2chat.entities.User;
 
 public interface UserDao extends JpaRepository<User, Long>{
 
+	User findByEmail(String email);
 }
