@@ -29,13 +29,10 @@ public class SecurityConfiguration {
                 .addFilterAfter(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests(requests -> requests
                         .antMatchers(HttpMethod.POST, "/autenticacion/user").permitAll()
-                        .antMatchers(HttpMethod.POST, "/api/hola").permitAll()
-                        .antMatchers(HttpMethod.GET, "/api/usuario").permitAll()
                         .antMatchers(HttpMethod.GET, "/swagger-ui/*").permitAll()
                         .antMatchers(HttpMethod.GET, "/v3/*").permitAll()
                         .antMatchers(HttpMethod.GET, "/v3/api-docs/*").permitAll()
                         .antMatchers(HttpMethod.GET, "/v3/api-docs/swagger-config/*").permitAll()
-                        .antMatchers(HttpMethod.POST, "/api/usuario").permitAll()
                         .anyRequest().authenticated());
 		
         return http.build();

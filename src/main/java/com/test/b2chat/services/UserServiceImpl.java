@@ -31,7 +31,6 @@ public class UserServiceImpl implements IUserService{
 	@Override
 	@Transactional
 	public User save(User entidad) {
-		//passwordEncoder.encode(null)
 		entidad.setPassword(passwordEncoder.encode(entidad.getPassword()));	
 		return userDao.save(entidad);
 	}

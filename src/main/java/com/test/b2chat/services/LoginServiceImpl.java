@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +28,9 @@ public class LoginServiceImpl implements ILoginService{
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Value("${password.jwt}")
+    private String passJwt;
     
 	@Override
 	public LoginResponseDto loginService(User loginRequest) {	
@@ -57,7 +61,6 @@ public class LoginServiceImpl implements ILoginService{
 	public String getJWTToken(String username) {
 		String token = "";
 		try {
-			String secretKey = "mySecretKey";
 			List<GrantedAuthority> grantedAuthorities = AuthorityUtils
 					.commaSeparatedStringToAuthorityList("ROLE_USER");
 			token = Jwts
@@ -71,7 +74,7 @@ public class LoginServiceImpl implements ILoginService{
 					.setIssuedAt(new Date(System.currentTimeMillis()))
 					.setExpiration(new Date(System.currentTimeMillis() + 6000000))
 					.signWith(SignatureAlgorithm.HS512,
-							secretKey.getBytes()).compact();
+							passJwt.getBytes()).compact();
 		    
 			
 		} catch (Exception e) {

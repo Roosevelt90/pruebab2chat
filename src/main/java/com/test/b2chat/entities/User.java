@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
@@ -31,6 +32,7 @@ public class User implements Serializable{
 	private Long id;
 		
 	@NotNull(message = "El nombre de usuario no puede ser nulo")
+    @NotBlank(message = "El nombre de usuario no puede estar en blanco")
 	@Column(name = "username")
 	private String username;
 		
@@ -43,7 +45,7 @@ public class User implements Serializable{
 	private String password;
 	
 	@NotNull(message = "El correo no puede ser nulo")
-	@Column(name = "email")
+	@Column(name = "email", unique = true)
     @Pattern(
         regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$",
         message = "La dirección de correo electrónico no es válida"

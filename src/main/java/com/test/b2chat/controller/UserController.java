@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -74,12 +75,21 @@ public class UserController {
 		try {
 			
 		     if (bindingResult.hasErrors()) {
-		            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
-		            //throw new ValidationException("Error de validación");
+		            // Manejar errores de validación
+		            Map<String, Object> errores = new HashMap<>();
+		            bindingResult.getFieldErrors().forEach(error -> errores.put(error.getField(), error.getDefaultMessage()));
+		            return new ResponseEntity<>(errores, HttpStatus.BAD_REQUEST);
 		        }
+		   /*  if (bindingResult.hasErrors()) {
+		            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+		        }*/
 			
 			User res = iUserService.save(request);
 			return new ResponseEntity<Object>(res, HttpStatus.OK);
+			
+		} catch (DataIntegrityViolationException e) {
+			map.put("message", "El correo electrónico ya se encuentra registrado");
+			return new ResponseEntity<>(map, HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			map.put("message", e.getMessage());
 			return new ResponseEntity<>(map, HttpStatus.INTERNAL_SERVER_ERROR);
