@@ -15,7 +15,6 @@ import com.test.b2chat.dto.LoginResponseDto;
 import com.test.b2chat.entities.User;
 import com.test.b2chat.iservices.ILoginService;
 import com.test.b2chat.repository.UserDao;
-import com.test.b2chat.util.EncryptionComponent;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -29,24 +28,17 @@ public class LoginServiceImpl implements ILoginService{
     @Autowired
     private PasswordEncoder passwordEncoder;
     
-    private final EncryptionComponent encryptionComponent;
-
-    @Autowired
-    public LoginServiceImpl(EncryptionComponent encryptionComponent) {
-    	this.encryptionComponent = encryptionComponent;
-    }
-    
 	@Override
-	public LoginResponseDto loginService(LoginRequestDto loginRequest) {	
+	public LoginResponseDto loginService(User loginRequest) {	
 
-		User user = userDao.findByEmail(loginRequest.getUserName());
+		User user = userDao.findByEmail(loginRequest.getEmail());
 		LoginResponseDto rsp = new LoginResponseDto();
 		if(user == null) {
-			rsp.setMensajeError("Usuario no existe o esta inactivo");
+			rsp.setMensajeError("Usuario no existe");
 			return rsp;
 		}
 		
-		if(!this.isPasswordValid(loginRequest.getPass(), user.getPassword())) {			
+		if(!this.isPasswordValid(loginRequest.getPassword(), user.getPassword())) {			
 			rsp.setMensajeError("Nombre de usuario y/o contraseña incorrecta");
 			return rsp;
 		}
@@ -62,24 +54,29 @@ public class LoginServiceImpl implements ILoginService{
 	    return passwordEncoder.matches(rawPassword, encodedPassword);
 	}
 	
-	private String getJWTToken(String username) {
-		String secretKey = "mySecretKey";
-		List<GrantedAuthority> grantedAuthorities = AuthorityUtils
-				.commaSeparatedStringToAuthorityList("ROLE_USER");
-		
-		String token = Jwts
-				.builder()
-				.setId("softtekJWT")
-				.setSubject(username)
-				.claim("authorities",
-						grantedAuthorities.stream()
-								.map(GrantedAuthority::getAuthority)
-								.collect(Collectors.toList()))
-				.setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + 6000000))
-				.signWith(SignatureAlgorithm.HS512,
-						secretKey.getBytes()).compact();
-	    
+	public String getJWTToken(String username) {
+		String token = "";
+		try {
+			String secretKey = "mySecretKey";
+			List<GrantedAuthority> grantedAuthorities = AuthorityUtils
+					.commaSeparatedStringToAuthorityList("ROLE_USER");
+			token = Jwts
+					.builder()
+					.setId("softtekJWT")
+					.setSubject(username)
+					.claim("authorities",
+							grantedAuthorities.stream()
+									.map(GrantedAuthority::getAuthority)
+									.collect(Collectors.toList()))
+					.setIssuedAt(new Date(System.currentTimeMillis()))
+					.setExpiration(new Date(System.currentTimeMillis() + 6000000))
+					.signWith(SignatureAlgorithm.HS512,
+							secretKey.getBytes()).compact();
+		    
+			
+		} catch (Exception e) {
+			System.out.println("-----e-------" + e.getMessage());
+		}
 		return "Bearer " + token;
 	}
 

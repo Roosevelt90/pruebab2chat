@@ -4,9 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.test.b2chat.entities.User;
 import com.test.b2chat.iservices.IUserService;
+import com.test.b2chat.services.GitHubService;
 
 
 @RestController
@@ -27,12 +31,18 @@ public class UserController {
 	@Autowired
 	private IUserService iUserService;
 	
-	@GetMapping(value = "/hola")
-	public ResponseEntity<Object> hola() {
-		return new ResponseEntity<Object>("Hola", HttpStatus.OK);
+    private final GitHubService gitHubService;
 
-	}
+    @Autowired
+    public UserController(GitHubService gitHubService) {
+        this.gitHubService = gitHubService;
+    }
 	
+   @GetMapping("/usuario/github/{username}")
+    public ResponseEntity<Object> getUserInfo(@PathVariable String username) {
+        return gitHubService.getUserInfo(username);       
+    }
+	   
 	@GetMapping(value = "/usuario")
 	public ResponseEntity<Object> get() {
 		Map<String, Object> map = new HashMap<String, Object>();
@@ -59,9 +69,15 @@ public class UserController {
 	}
 
 	@PostMapping(value = "/usuario")
-	public ResponseEntity<Object> create(@RequestBody User request) {
+	public ResponseEntity<Object> create(@Valid @RequestBody User request, BindingResult bindingResult) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		try {
+			
+		     if (bindingResult.hasErrors()) {
+		            return ResponseEntity.badRequest().body(bindingResult.getAllErrors().get(0).getDefaultMessage());
+		            //throw new ValidationException("Error de validación");
+		        }
+			
 			User res = iUserService.save(request);
 			return new ResponseEntity<Object>(res, HttpStatus.OK);
 		} catch (Exception e) {
@@ -76,18 +92,13 @@ public class UserController {
 		try {
 
 			User currentPerson = iUserService.findById(id);
-
-			/*
-			 * currentPerson.setId(currentPerson.getId());
-			 * currentPerson.setNitProveedor(person.getNitProveedor());
-			 */
-
-			/*
-			 * currentPerson.setDescripcion(person.getDescripcion());
-			 * currentPerson.setCantidad(person.getCantidad());
-			 * currentPerson.setPrecio(person.getPrecio());
-			 */
-
+			
+			if(request.getEmail() != null)
+				currentPerson.setEmail(request.getEmail());
+			
+			if(request.getUsername() != null)
+				currentPerson.setUsername(request.getUsername());
+			
 			User res = iUserService.save(currentPerson);
 
 			return new ResponseEntity<Object>(res, HttpStatus.OK);

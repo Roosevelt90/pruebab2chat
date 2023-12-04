@@ -2,28 +2,26 @@ package com.test.b2chat.services;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.test.b2chat.entities.User;
 import com.test.b2chat.iservices.IUserService;
 import com.test.b2chat.repository.UserDao;
-import com.test.b2chat.util.EncryptionComponent;
 
-import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceImpl implements IUserService{
 
     @Autowired
 	private UserDao userDao;
-    
-    private final EncryptionComponent encryptionComponent;
-    
-    public UserServiceImpl(EncryptionComponent encryptionComponent) {
-    	this.encryptionComponent = encryptionComponent;
-    }
-    
+     
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+ 
 	@Override
 	@Transactional
 	public List<User> findAll() {
@@ -33,7 +31,8 @@ public class UserServiceImpl implements IUserService{
 	@Override
 	@Transactional
 	public User save(User entidad) {
-		entidad.setPassword(encryptionComponent.encrypt(entidad.getPassword()));	
+		//passwordEncoder.encode(null)
+		entidad.setPassword(passwordEncoder.encode(entidad.getPassword()));	
 		return userDao.save(entidad);
 	}
 
